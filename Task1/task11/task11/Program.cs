@@ -16,18 +16,18 @@ namespace task11
 
             int N = 3;
             var path = @"C:\training\Hadasim\HomeTask\TMPFiles\logs1.txt";
-            var dic=   CommonError(path, N);
+            var List=   CommonError(path, N);
             Console.WriteLine("All Error:");
-            foreach (var kvp in dic.OrderByDescending(e => e.Value))
+            foreach (var obj in List.OrderByDescending(e => e.Value))
             {
-                Console.WriteLine($"Error: {kvp.Key} - amount: {kvp.Value}");
+                Console.WriteLine($"Error: {obj.Key} - amount: {obj.Value}");
             }
             Console.ReadLine();
 
 
 
         }
-        public static Dictionary<string, int> CommonError(string FilePath, int N)
+        public static List<KeyValuePair<string, int>> CommonError(string FilePath, int N)
         {
             int NumThreads = Environment.ProcessorCount;
             var outputDirectory = @"C:\training\Hadasim\HomeTask\FileOfThreads";
@@ -56,14 +56,13 @@ namespace task11
                     Console.WriteLine($"File Log{i}.txt not found");
 
             });
+   
 
-            var TopErr = TotalErrors
-            .OrderByDescending(x => x.Value)
-            .Take(N)
-            .ToDictionary(x => x.Key, x => x.Value);
+           
 
-            return TopErr;
-               
+        var TopErrList = TotalErrors.OrderByDescending(x => x.Value).Take(N) .ToList();
+        return TopErrList;
+
         }
         public static void SplitFile(string LogfilePath, int NumSplit, string DirCreateFiles)
 
