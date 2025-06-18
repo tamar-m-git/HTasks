@@ -16,6 +16,7 @@ namespace task11
 
             int N = 3;
             var path = @"C:\training\Hadasim\HomeTask\TMPFiles\logs1.txt";
+            try { 
             var List=   CommonError(path, N);
             Console.WriteLine("All Error:");
             foreach (var obj in List.OrderByDescending(e => e.Value))
@@ -23,6 +24,11 @@ namespace task11
                 Console.WriteLine($"Error: {obj.Key} - amount: {obj.Value}");
             }
             Console.ReadLine();
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(" שגיאה בהרצת התוכנית");
+            }
 
 
 
@@ -40,7 +46,6 @@ namespace task11
                 if (File.Exists(filePath))
                 {
                     Dictionary<string, int> ErrorCounts = CountError(filePath);
-                    //בדיקה אם זה עובד בצורה אסינכרונית- הדפסתי את מזהי התהליכונים
                     foreach (var ObjDict in ErrorCounts)
                     {
                         TotalErrors.AddOrUpdate(
@@ -49,16 +54,13 @@ namespace task11
                             (key, OldCount) => OldCount + ObjDict.Value
                         );
                     }
-
+                    //בדיקה אם זה עובד בצורה אסינכרונית- הדפסתי את מזהי התהליכונים
                     Console.WriteLine($"Processing number: {i}");
                 }
                 else
                     Console.WriteLine($"File Log{i}.txt not found");
 
             });
-   
-
-           
 
         var TopErrList = TotalErrors.OrderByDescending(x => x.Value).Take(N) .ToList();
         return TopErrList;
@@ -67,7 +69,11 @@ namespace task11
         public static void SplitFile(string LogfilePath, int NumSplit, string DirCreateFiles)
 
         {
+            if (!File.Exists(LogfilePath))
+                throw new FileNotFoundException("קובץ הלוג לא נמצא", LogfilePath);
             int lineCount = File.ReadLines(LogfilePath).Count();
+            if (lineCount == 0)
+                throw new InvalidDataException("קובץ הלוג ריק");
             int NumExtraLines = lineCount % NumSplit;
 
             if (!Directory.Exists(DirCreateFiles))
@@ -106,7 +112,11 @@ namespace task11
         }
         public static Dictionary<string, int> CountError(string filePath)
         {
+            if (!File.Exists(filePath))
+                throw new FileNotFoundException("קובץ הלוג לא נמצא", filePath);
             int lineCount = File.ReadLines(filePath).Count();
+            if (lineCount == 0)
+                throw new InvalidDataException("קובץ הלוג ריק");
             var dictError = new Dictionary<string, int>();
             using (StreamReader reader = new StreamReader(filePath))
             {
@@ -114,6 +124,8 @@ namespace task11
                 {
                     var line = reader.ReadLine();
                     int index = line.IndexOf("Error");
+                    if (index == -1)
+                        throw new FormatException("לא נמצא סוג שגיאה");
                     string Err = line.Substring(index + "Error: ".Length);
                     if(dictError.ContainsKey(Err))
                          dictError[Err]++;
