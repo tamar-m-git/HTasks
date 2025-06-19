@@ -73,8 +73,6 @@ if __name__ == '__main__':
     current_dir = os.path.dirname(__file__)
     FileCsv = "../Data/time_series (1).csv"
     DirOut= "../Data/OutPutFiles"
-
-   # df = pd.read_csv(r"C:\training\Hadasim\HomeTask\TMPFiles\time_series (1).csv")
     start=time.time()
     AvgAllFiles(FileCsv,DirOut)
     end=time.time()
