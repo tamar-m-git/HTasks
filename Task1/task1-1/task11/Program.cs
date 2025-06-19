@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Collections.Concurrent;
+using System.Reflection;
 
 
 namespace task11
@@ -14,31 +15,45 @@ namespace task11
         static void Main(string[] args)
         {
 
-            int N = 3;
-            var path = @"C:\training\Hadasim\HomeTask\TMPFiles\logs1.txt";
-            try { 
-            var List=   CommonError(path, N);
-            Console.WriteLine("All Error:");
-            foreach (var obj in List.OrderByDescending(e => e.Value))
+            int N = 10;
+            string executablePath = Assembly.GetExecutingAssembly().Location;
+            string currentExeDirectory = Path.GetDirectoryName(executablePath);
+            string baseDirectory = currentExeDirectory;
+            baseDirectory = Directory.GetParent(baseDirectory).FullName;
+            baseDirectory = Directory.GetParent(baseDirectory).FullName;
+            baseDirectory = Directory.GetParent(baseDirectory).FullName;
+            baseDirectory = Directory.GetParent(baseDirectory).FullName;
+
+            var dataDirectory = Path.Combine(baseDirectory, "Data");
+            var path = Path.Combine(dataDirectory, "logs1.txt");
+            var OutPutDir = Path.Combine(dataDirectory, "OutPutFiles");
+
+            try
             {
-                Console.WriteLine($"Error: {obj.Key} - amount: {obj.Value}");
+                var List = CommonError(path, N, OutPutDir);
+                Console.WriteLine("All Error:");
+                foreach (var obj in List.OrderByDescending(e => e.Value))
+                {
+                    Console.WriteLine($"Error: {obj.Key} - amount: {obj.Value}");
+                }
+                Console.ReadLine();
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine(" Err in Exec program");
+                Console.WriteLine("Message: " + ex.Message);
+                Console.WriteLine("StackTrace: " + ex.StackTrace);
+            }
+
+
             Console.ReadLine();
-            }
-            catch(Exception ex)
-            {
-                Console.WriteLine(" שגיאה בהרצת התוכנית");
-            }
-
-
-
         }
-        public static List<KeyValuePair<string, int>> CommonError(string FilePath, int N)
+
+        public static List<KeyValuePair<string, int>> CommonError(string FilePath, int N, string outputDirectory)
         {
             int NumThreads = Environment.ProcessorCount;
-            var outputDirectory = @"C:\training\Hadasim\HomeTask\FileOfThreads";
             SplitFile(FilePath, NumThreads, outputDirectory);
-            List<int> NumberFiles = Enumerable.Range(0, 16).ToList();
+            List<int> NumberFiles = Enumerable.Range(0, NumThreads).ToList();
             var TotalErrors = new ConcurrentDictionary<string, int>();
             Parallel.ForEach(NumberFiles, i =>
             {
@@ -54,26 +69,36 @@ namespace task11
                             (key, OldCount) => OldCount + ObjDict.Value
                         );
                     }
-                    //בדיקה אם זה עובד בצורה אסינכרונית- הדפסתי את מזהי התהליכונים
+                    //בדיקה אם זה עובד בצורה אסינכרונית- הדפסת מזהי התהליכונים
                     Console.WriteLine($"Processing number: {i}");
                 }
                 else
                     Console.WriteLine($"File Log{i}.txt not found");
 
             });
+            foreach (var file in Directory.GetFiles(outputDirectory, "Log*.txt"))
+            {   try
+                {
+                    File.Delete(file);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Fail to delete {file}: {ex.Message}");
+                }
+            }
 
-        var TopErrList = TotalErrors.OrderByDescending(x => x.Value).Take(N) .ToList();
-        return TopErrList;
+            var TopErrList = TotalErrors.OrderByDescending(x => x.Value).Take(N).ToList();
+            return TopErrList;
 
         }
         public static void SplitFile(string LogfilePath, int NumSplit, string DirCreateFiles)
 
         {
             if (!File.Exists(LogfilePath))
-                throw new FileNotFoundException("קובץ הלוג לא נמצא", LogfilePath);
+                throw new FileNotFoundException("LogFile was not found", LogfilePath);
             int lineCount = File.ReadLines(LogfilePath).Count();
             if (lineCount == 0)
-                throw new InvalidDataException("קובץ הלוג ריק");
+                throw new InvalidDataException("LogFile is empty  ");
             int NumExtraLines = lineCount % NumSplit;
 
             if (!Directory.Exists(DirCreateFiles))
@@ -92,7 +117,7 @@ namespace task11
                     {
                         for (int j = 0; j < lineCount / NumSplit; j++)
                         {
-                            var  line = reader.ReadLine();
+                            var line = reader.ReadLine();
                             writer.WriteLine(line);
 
                         }
@@ -113,10 +138,10 @@ namespace task11
         public static Dictionary<string, int> CountError(string filePath)
         {
             if (!File.Exists(filePath))
-                throw new FileNotFoundException("קובץ הלוג לא נמצא", filePath);
+                throw new FileNotFoundException("LogFile was not found", filePath);
             int lineCount = File.ReadLines(filePath).Count();
             if (lineCount == 0)
-                throw new InvalidDataException("קובץ הלוג ריק");
+                throw new InvalidDataException("LogFile is empty");
             var dictError = new Dictionary<string, int>();
             using (StreamReader reader = new StreamReader(filePath))
             {
@@ -125,15 +150,15 @@ namespace task11
                     var line = reader.ReadLine();
                     int index = line.IndexOf("Error");
                     if (index == -1)
-                        throw new FormatException("לא נמצא סוג שגיאה");
+                        throw new FormatException("Kind of Error not found");
                     string Err = line.Substring(index + "Error: ".Length);
-                    if(dictError.ContainsKey(Err))
-                         dictError[Err]++;
-                   
+                    if (dictError.ContainsKey(Err))
+                        dictError[Err]++;
+
                     else
-                        dictError[Err]=1;
+                        dictError[Err] = 1;
                 }
-               
+
 
             }
             return dictError;
