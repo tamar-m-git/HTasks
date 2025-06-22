@@ -5,6 +5,19 @@ import os
 import glob
 from datetime import datetime
 from multiprocessing import Pool, cpu_count
+import os
+import pandas as pd
+
+def read_file(file_path):
+    _, ext = os.path.splitext(file_path)
+    ext = ext.lower()
+    if ext == '.csv':
+        df = pd.read_csv(file_path, on_bad_lines='skip')
+    elif ext in ('.parquet', '.pq'):
+        df = pd.read_parquet(file_path)
+    else:
+        raise ValueError(f"Format not supported: {ext}")
+    return df
 def CheckValidationAndavg(file_path):
     try:
         if os.path.getsize(file_path) == 0:
@@ -15,6 +28,7 @@ def CheckValidationAndavg(file_path):
         print(f"[PID {pid}] Start processing: {file_path}")
         print(f"Validation of: {file_path}")
         df = pd.read_csv(file_path,on_bad_lines='skip')
+        print(df.columns.tolist())
         #check Format of date
         df['timestamp'] = pd.to_datetime(df['timestamp'], format='mixed', errors='coerce',utc=True)
         df.dropna(subset=['timestamp'], inplace=True)
@@ -37,7 +51,7 @@ def CheckValidationAndavg(file_path):
         print(f"Error in file : {e}")
         return pd.DataFrame()
 
-def SplitFile(FileScv, DirOutput,):
+"""def SplitFile(FileScv, DirOutput,):
     try:
         os.makedirs(DirOutput, exist_ok=True)
         for chunk in pd.read_csv(FileScv,on_bad_lines='skip',chunksize=10000,parse_dates=['timestamp'], ):
@@ -50,9 +64,37 @@ def SplitFile(FileScv, DirOutput,):
                 print("success split")
     except Exception as e:
         print(f"Err in file {FileScv}: {e}")
+"""
+def split_file(input_path, output_dir):
+    _, ext = os.path.splitext(input_path)
+    ext = ext.lower()
+    os.makedirs(output_dir, exist_ok=True)
+
+    if ext == '.csv':
+        for chunk in pd.read_csv(input_path, on_bad_lines='skip', parse_dates=['timestamp'], chunksize=10000):
+            chunk['timestamp'] = pd.to_datetime(chunk['timestamp'], errors='coerce')
+            chunk = chunk.dropna(subset=['timestamp'])
+            for date_str, group in chunk.groupby(chunk['timestamp'].dt.strftime('%Y-%m-%d')):
+                out_path = os.path.join(output_dir, f"{date_str}.csv")
+                header = not os.path.exists(out_path)
+                group.to_csv(out_path, mode='a', header=header, index=False)
+                print(f"Split succes: {out_path}")
+    elif ext in ('.parquet', '.pq'):
+        df = pd.read_parquet(input_path)
+        print(df.columns.tolist())
+        df['timestamp'] = pd.to_datetime(df['timestamp'], errors='coerce')
+        df = df.dropna(subset=['timestamp'])
+        for date_str, group in df.groupby(df['timestamp'].dt.strftime('%Y-%m-%d')):
+            out_path = os.path.join(output_dir, f"{date_str}.csv")
+            header = not os.path.exists(out_path)
+            group.to_csv(out_path, mode='a', header=header, index=False)
+            print(f"Split success: {out_path}")
+    else:
+        raise ValueError(f" format is not supported: {ext}")
+
 def AvgAllFiles (FileScv,DirOutput):
     try:
-        SplitFile(FileScv,DirOutput)
+        split_file(FileScv,DirOutput)
         max_processes=  max(1,cpu_count(),-1)
         csv_files = glob.glob(os.path.join(DirOutput, '*.csv'))
         with Pool(processes=max_processes) as pool:
@@ -60,17 +102,21 @@ def AvgAllFiles (FileScv,DirOutput):
         final_csv = os.path.join(DirOutput, "final_AVG.csv")
         final_df = pd.concat(results, ignore_index=True)
         final_df.to_csv(final_csv, index=False)
+
         for file_path in csv_files:
+           
             try:
                 if os.path.basename(file_path) != "final_AVG.csv":
                     os.remove(file_path)
                     print(f"Deleted: {file_path}")
             except Exception as delete_err:
                 print(f"Could not delete {file_path}: {delete_err}")
+
     except Exception as e:
         print("ERR in manage Process: {e} ")
 if __name__ == '__main__':
     current_dir = os.path.dirname(__file__)
+    Fileparquet= "../Data/time_series.parquet"
     FileCsv = "../Data/time_series (1).csv"
     DirOut= "../Data/OutPutFiles"
     start=time.time()
