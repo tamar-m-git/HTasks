@@ -7,7 +7,7 @@ export const addOrderValidation = Joi.object({
   supplierId: Joi.string().hex().length(24).required(),
   listItems: Joi.array().items(
     Joi.object({
-      productId: Joi.string().hex().length(24).pattern(/^[A-Za-z\u0590-\u05FF ]+$/).required(),
+      productId: Joi.string().hex().length(24).required(),
       quantity: Joi.number().integer().min(1).required()
     })
   ).min(1).required()

@@ -1,12 +1,124 @@
-### הרשמה של משתמש מסוג supplier
-POST http://localhost:5000/api/users/register
+### Register Owner (first time only)
+POST http://localhost:5000/users/register
 Content-Type: application/json
 
 {
-  "userName": "supplier123",
-  "password": "123456",
-  "role": "supplier",
-  "companyName": "תנובה ",
-  "phoneNumber": "0501234567",
-  "representativeName": "עידן כהן",
+  "userName": "Dor",
+  "password": "Password123!",
+  "role": "owner"
 }
+
+### Register Supplier
+POST http://localhost:5000/users/register
+Content-Type: application/json
+
+{
+  "userName": "Pini",
+  "password": "retgfy@#4",
+  "role": "supplier",
+  "companyName": "Tempo",
+  "phoneNumber": "0583256988",
+  "representativeName": "Gadi Feldman"
+}
+### Register Another Supplier
+POST http://localhost:5000/users/register
+Content-Type: application/json
+
+{
+  "userName": "Yoni",
+  "password": "789578@#4",
+  "role": "supplier",
+  "companyName": "Osem",
+  "phoneNumber": "0548402198",
+  "representativeName": "Eli Fridman"
+}
+### Register Another Supplier3
+POST http://localhost:5000/users/register
+Content-Type: application/json
+
+{
+  "userName": "David",
+  "password": "8972236@#4",
+  "role": "supplier",
+  "companyName": "Tnuva",
+  "phoneNumber": "0556787898",
+  "representativeName": "Maor bitan"
+}
+
+### Login supplier User
+@owner_token =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4NjI3NzUwMzRmN2JkNjhjMDEwNmRhMiIsInJvbGUiOiJvd25lciIsInVzZXJOYW1lIjoiRG9yIiwiaWF0IjoxNzUxMjg3NTQzLCJleHAiOjE3NTEyODg0NDN9.a7sCkxWSJ8i761mMLfbFjSUvgBdmkYvxgIGtnuD2DpU
+POST http://localhost:5000/users/login
+Content-Type: application/json
+
+{
+  "userName": "Yoni",
+  "password": "789578@#4"
+}
+
+### Login owner User
+@supplier_token =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4NjI3N2I3MzRmN2JkNjhjMDEwNmRhOSIsInJvbGUiOiJzdXBwbGllciIsInVzZXJOYW1lIjoiWW9uaSIsImlhdCI6MTc1MTI4NzM4MSwiZXhwIjoxNzUxMjg4MjgxfQ.sX_NPFGm7oNa09FG-U_H2mo6MxrbrOjF4zMTiWgaSRU
+POST http://localhost:5000/users/login
+Content-Type: application/json
+
+{
+  "userName": "Dor",
+  "password": "Password123!"
+}
+
+### Get All Suppliers (Owner Only)
+GET http://localhost:5000/suppliers/getSuppliers
+Authorization: Bearer {{owner_token}}
+
+### Create Product (Supplier Only)
+POST http://localhost:5000/products/createProduct
+Content-Type: application/json
+Authorization: Bearer {{supplier_token}}
+
+{
+  "name": "Nyoki",
+  "price": 3.50,
+  "minQuantity": 10
+}
+
+### Get Products by Supplier (Supplier Only)
+GET http://localhost:5000/products/getProductBySupplier
+Authorization: Bearer {{supplier_token}}
+// This will return the products created by the supplier logged in with the token.
+
+GET http://localhost:5000/products/getProductBySupplier
+Authorization: Bearer {{owner_token}}
+
+### Create Order (Owner Only)
+POST http://localhost:5000/orders/createOrder
+Content-Type: application/json
+Authorization: Bearer {{owner_token}}
+
+{
+  "supplierId": "686277b734f7bd68c0106da9", 
+  "listItems": [
+    {
+      "productId": "68628693bb59eb66f41905d4", 
+      "quantity": 5
+    },
+    {
+      "productId": "68628693bb59eb66f41905d4", 
+      "quantity": 3
+    }
+  ]
+}
+
+### Get All Orders (Owner Only)
+GET http://localhost:5000/orders/getAllOrders
+Authorization: Bearer {{owner_token}}
+
+### Get Orders by Supplier (Supplier Only)
+GET http://localhost:5000/orders/getOrdersBySupplier
+Authorization: Bearer {{supplier_token}}
+
+### Confirm Order (Supplier Only)
+PUT http://localhost:5000/orders/confirm/686287c5bb59eb66f41905e0
+Authorization: Bearer {{supplier_token}}
+
+### Complete Order (Owner Only)
+PUT http://localhost:5000/orders/complete/686287c5bb59eb66f41905e0
+Authorization: Bearer {{owner_token}}

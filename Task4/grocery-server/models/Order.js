@@ -1,4 +1,5 @@
 import { Schema, model } from "mongoose";
+import { Counter } from "./Counter.js";
 const orderSchema = new Schema({
   supplierId: {
       type: Schema.Types.ObjectId,
@@ -9,7 +10,7 @@ const orderSchema = new Schema({
         productId: { type: Schema.Types.ObjectId, ref: "Product", required: true }, 
         quantity: { type: Number, required: true, min:1}
     }],
-    status: { type: String, enum: ["created", "in process", "completed"], default: "Created" },
+    status: { type: String, enum: ["created", "in process", "completed"], default: "created" },
     dateOrder: { type: Date, default: Date.now },
     orderNumber: { type: Number, unique: true } 
 });

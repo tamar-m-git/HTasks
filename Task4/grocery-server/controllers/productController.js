@@ -8,22 +8,22 @@ export const createProduct = async (req, res) => {
   const supplierId = req.user.id;
 
   try {
-     if (req.user.role !== "supplier") {
-      return res.status(403).json({ message: " Only suppliers can create products." });
-    }
-    const productExists = await Product.findOne({ name, supplier: supplierId });
+
+    const productExists = await Product.findOne({ name, supplierId: supplierId });
     if (productExists) {
       return res
         .status(409)
         .json({ msg: "you  have a product with same name" });
     }
     const product = await Product.create({
-      supplier: supplierId,
+      supplierId: supplierId,
       name,
       price,
       minQuantity,
     });
     res.status(201).json({msg:`product ${product.name} created successfully`});
+    
+    
   } catch (error) {
     console.error(error);
     res.status(500).json({ msg: "server error" });
@@ -35,13 +35,11 @@ export const createProduct = async (req, res) => {
 
 
 
+
+
+
 export const getProductBySupplier = async (req, res) => {
   try {
-
-    if (req.user.role !== "supplier") {
-      return res.status(403).json({ message: "Access Denied. Only suppliers can view their products." });
-    }
-
     const supplierId = req.user.id;
     const products = await Product.find({ supplierId })
       .sort({ name: 1 });

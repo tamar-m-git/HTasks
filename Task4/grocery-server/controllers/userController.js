@@ -20,8 +20,8 @@ export const registerUser = async (req, res) => {
 
         const user = new User({ userName, password, role, companyName, phoneNumber, representativeName });
         await user.save();
-        const token = generateToken(user);
-        res.status(201).json({ message: "Registration successful.", accessToken: token });
+      //  const token = generateToken(user);
+        res.status(201).json({ message: "Registration successful."});
       
 }
   catch (error) {
@@ -46,6 +46,7 @@ export const loginUser = async (req, res) => {
 
     const token = generateToken(user);
     res.json({ accessToken: token });
+    console.log("User logged in:", user.userName);
   } catch (error) {
     console.error("loginUser error:", error);
     res.status(500).json({ message: "Server error." });

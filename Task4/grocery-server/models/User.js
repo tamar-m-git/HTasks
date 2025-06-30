@@ -31,8 +31,8 @@ UserSchema.pre("save", async function (next) {
   this.password = await bcrypt.hash(this.password, salt);
     if (this.role === "owner") {
     this.companyName = undefined;
-    this.phone = undefined;
-    this.contactName = undefined;
+    this.phoneNumber = undefined;
+    this.representativeName = undefined;
   }
   next();
 });

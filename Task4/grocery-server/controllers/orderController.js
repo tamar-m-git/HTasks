@@ -33,13 +33,7 @@ export const createOrder = async (req, res) => {
     }
 
     try {
-        // בדיקה אם כל המוצרים קיימים במלאי
-        for (const item of listItems) {
-            const product = await Product.findById(item.productId);
-            if (!product || product.stock < item.quantity) {
-                return res.status(400).json({ message: `Product ${item.productId} not available or insufficient stock.` });
-            }
-        }
+
 
         const newOrder = new Order({
             supplierId: req.user.id,

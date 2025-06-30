@@ -4,10 +4,10 @@ import {
   registerUser
 
 } from "../controllers/userController.js";
-import {
-  authenticateToken,
-  authorizeOwner,authorizeOwnerOrSupplier
-} from "../middleware/auth.js";
+//import {
+//  authenticateToken,
+ // authorizeOwner,authorizeOwnerOrSupplier
+//} from "../middleware/auth.js";
 
 import { addUserValidation,loginUserValidation } from "../middleware/Validation/userValidation.js";
 import { validate } from "../middleware/Validation/validateMain.js";

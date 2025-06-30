@@ -9,9 +9,8 @@ const productSchema = new Schema({
     required: true,
     index: true,
   }
+});
 
-})
-
-productSchema.index({ supplier: 1, name: 1 }, { unique: true });
+productSchema.index({ supplierId: 1, name: 1 }, { unique: true });
 export const Product = model("Product", productSchema);
 export default Product;

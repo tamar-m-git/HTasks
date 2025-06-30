@@ -1,5 +1,4 @@
-import mongoose from "mongoose";
-
+import mongoose, { Schema } from "mongoose";
 const counterSchema = new Schema({
   name: { type: String, required: true, unique: true },
   seq: { type: Number, default: 0 }

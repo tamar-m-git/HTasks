@@ -12,6 +12,8 @@ import OrderRouter from "./routes/OrderRoutes.js";
 
 
 dotenv.config();
+console.log("JWT_SECRET loaded:", process.env.JWT_SECRET ? "Loaded (not displayed)" : "Not loaded or empty");
+
 
 const app = express();
 
